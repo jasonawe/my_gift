@@ -1,0 +1,87 @@
+"use server"
+
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
+import { z } from "zod"
+
+const EventSchema = z.object({
+  title: z.string().min(1, "请输入事件名称"),
+  event_type: z.string().min(1, "请选择事件类型"),
+  event_start_date: z.string().min(1, "请选择开始日期"),
+  event_end_date: z.string().min(1, "请选择结束日期"),
+  location: z.string().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
+  voice_enable: z.boolean().default(false),
+  voice_id: z.string().optional(),
+})
+
+export async function createEvent(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "请先登录" }
+
+  const validatedFields = EventSchema.safeParse({
+    title: formData.get("title"),
+    event_type: formData.get("event_type"),
+    event_start_date: formData.get("event_start_date"),
+    event_end_date: formData.get("event_end_date"),
+    location: formData.get("location"),
+    latitude: formData.get("latitude") || undefined,
+    longitude: formData.get("longitude") || undefined,
+    voice_enable: formData.get("voice_enable") === "on",
+    voice_id: formData.get("voice_id"),
+  })
+
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.flatten().fieldErrors }
+  }
+
+  const { data, error } = await supabase
+    .from("gl_events")
+    .insert([
+      {
+        ...validatedFields.data,
+        is_active: true,
+        user_id: user.id
+      }
+    ])
+    .select()
+
+  if (error) {
+    console.error("Database Error:", error)
+    return { error: `数据库提交失败: ${error.message}` }
+  }
+
+  // 将该用户的其他所有事件设为非活跃
+  await supabase
+    .from("gl_events")
+    .update({ is_active: false })
+    .eq("user_id", user.id)
+    .neq("id", data[0].id)
+
+  revalidatePath("/dashboard")
+  return { success: true, eventId: data[0].id }
+}
+
+export async function getActiveEvent() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from("gl_events")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .maybeSingle()
+
+  if (error) {
+    console.error("Fetch Error:", error)
+    return null
+  }
+
+  return data
+}
