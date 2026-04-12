@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { getGiftsWithFilters, updateGift, deleteGift, GiftEntryData } from "@/lib/actions/gifts"
-import { amountToChinese } from "@/lib/utils"
+import { amountToChinese, cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { 
   Select, 
@@ -21,7 +21,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Search, ChevronLeft, ChevronRight, Users, RefreshCw, Trash2, Loader2 } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, Users, RefreshCw, Trash2, Loader2, Calendar } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 
@@ -34,7 +34,7 @@ const CornerDecoration = ({ className }: { className?: string }) => (
 
 interface GiftLedgerGridProps {
   eventId: string
-  theme?: "theme-festive" | "theme-solemn"
+  theme?: string
 }
 
 export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerGridProps) {
@@ -48,7 +48,6 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
     page: 1
   })
 
-  // 编辑相关的状态
   const [editingGift, setEditingGift] = useState<any>(null)
   const [editFormData, setEditFormData] = useState<Partial<GiftEntryData>>({})
   const [isUpdating, setIsUpdating] = useState(false)
@@ -59,11 +58,7 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
 
   const fetchData = async () => {
     setLoading(true)
-    const result = await getGiftsWithFilters({
-      eventId,
-      ...filters,
-      pageSize
-    })
+    const result = await getGiftsWithFilters({ eventId, ...filters, pageSize })
     setGifts(result.gifts)
     setStats({ count: result.count, totalAmount: result.totalAmount })
     setLoading(false)
@@ -73,22 +68,15 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
     fetchData()
   }, [filters.page, filters.giftType, filters.relationship, eventId])
 
-  const handleSearch = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      setFilters(f => ({ ...filters, page: 1 }))
-      fetchData()
-    }
-  }
-
   const openEditDialog = (gift: any) => {
     setEditFormData({
       donor_name: gift.donor_name,
       amount: Number(gift.amount),
-      gift_type: gift.gift_type, // 已经在这里设值了
+      gift_type: gift.gift_type,
       relationship: gift.relationship || "",
       remark: gift.remark || ""
     })
-    setEditingGift(gift) // 设值后再打开，确保初始化
+    setEditingGift(gift)
   }
 
   const handleUpdate = async () => {
@@ -97,7 +85,7 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
     const result = await updateGift(editingGift.id, editFormData as GiftEntryData)
     setIsUpdating(false)
     if (result.success) {
-      toast.success("记录已更新")
+      toast.success("已更新")
       setEditingGift(null)
       fetchData()
     } else {
@@ -106,71 +94,55 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
   }
 
   const handleDelete = async () => {
-    if (!editingGift || !confirm("确定要永久删除这笔记录吗？")) return
+    if (!editingGift || !confirm("确定删除吗？")) return
     setIsUpdating(true)
     const result = await deleteGift(editingGift.id)
     setIsUpdating(false)
     if (result.success) {
-      toast.success("记录已删除")
+      toast.success("已删除")
       setEditingGift(null)
       fetchData()
-    } else {
-      toast.error("删除失败")
     }
   }
 
+  const relationshipPresets = ["长辈", "平辈", "晚辈", "挚友", "同事", "同学", "同乡", "其他"]
   const totalPages = Math.ceil(stats.count / pageSize)
   const currentPageTotal = gifts.reduce((sum, g) => sum + Number(g.amount), 0)
 
   return (
     <div className={`space-y-6 ${theme}`}>
-      {/* 工具栏 */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border shadow-sm">
+      {/* 搜索与工具栏 */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border shadow-sm">
         <div className="flex gap-2 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder={`搜索人员或备注...`} 
-              className="pl-9 rounded-xl border-none bg-muted/50 focus:bg-white transition-all"
-              value={filters.search}
-              onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
-              onKeyDown={handleSearch}
-            />
-          </div>
-          <Button variant="ghost" size="icon" onClick={fetchData}>
-            <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
+          <Input 
+            placeholder="搜索姓名..." 
+            value={filters.search}
+            onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
+            onKeyDown={e => e.key === "Enter" && setFilters(f => ({ ...f, page: 1 }))}
+            className="h-10 md:w-64"
+          />
+          <Button variant="outline" onClick={fetchData}><RefreshCw className={loading ? "animate-spin" : ""} /></Button>
         </div>
-
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 rounded-full border border-primary/10">
-            <Users className="size-3.5 text-primary" />
-            <span className="text-xs font-black text-primary">{stats.count} 条记录</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" disabled={filters.page <= 1} onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}>
-              <ChevronLeft className="size-5" />
-            </Button>
-            <span className="text-xs font-black w-12 text-center">{filters.page}/{totalPages || 1}</span>
-            <Button variant="ghost" size="icon" disabled={filters.page >= totalPages} onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}>
-              <ChevronRight className="size-5" />
-            </Button>
+          <span className="text-xs font-bold text-primary">共 {stats.count} 笔</span>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" disabled={filters.page <= 1} onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}><ChevronLeft /></Button>
+            <span className="text-xs font-bold">{filters.page}/{totalPages || 1}</span>
+            <Button variant="ghost" size="icon" disabled={filters.page >= totalPages} onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}><ChevronRight /></Button>
           </div>
         </div>
       </div>
 
-      {/* 仿真礼簿主区域 */}
-      <div className={`relative rounded-sm border-[12px] border-white shadow-2xl overflow-hidden p-8 min-h-[700px] flex flex-col transition-colors duration-700 ${isSolemn ? 'bg-slate-50' : 'bg-[#fef2f2]'}`}>
-        <CornerDecoration className="absolute top-2 left-2 size-12 text-primary opacity-80" />
+      {/* 还原仿真账本布局 */}
+      <div className="relative rounded-lg border-[12px] border-white shadow-2xl overflow-hidden p-8 min-h-[700px] flex flex-col bg-[#fefaf6]">
+        <CornerDecoration className="absolute top-2 left-2 size-12 text-primary opacity-60" />
         <CornerDecoration className="absolute top-2 right-2 size-12 text-primary opacity-80 rotate-90" />
         <CornerDecoration className="absolute bottom-2 left-2 size-12 text-primary opacity-80 -rotate-90" />
         <CornerDecoration className="absolute bottom-2 right-2 size-12 text-primary opacity-80 rotate-180" />
 
-        <div className={`flex-1 flex border-2 border-primary/40 divide-x-2 divide-primary/40 transition-colors duration-700 ${isSolemn ? 'bg-white' : 'bg-[#fefaf6]'}`}>
+        <div className="flex-1 flex border-2 border-primary/40 divide-x-2 divide-primary/40 bg-white/80">
           {loading ? (
-            Array.from({ length: pageSize }).map((_, i) => (
-              <div key={i} className="flex-1 p-4"><Skeleton className="h-full w-full opacity-10 bg-primary" /></div>
-            ))
+            <div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
           ) : (
             <>
               {gifts.map((gift) => (
@@ -179,13 +151,13 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
                   className="flex-1 flex flex-col group min-w-[80px] cursor-pointer hover:bg-primary/5 transition-colors relative"
                   onClick={() => openEditDialog(gift)}
                 >
-                  <div className="flex-[4] flex flex-col items-center justify-start pt-8 pb-2 px-2 border-b-2 border-primary/40 bg-white/20">
-                    <span className="text-3xl font-black tracking-[0.2em] text-[#1a1a1a] font-serif leading-none" style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
+                  <div className="flex-[4] flex flex-col items-center justify-start pt-8 pb-2 px-2 border-b-2 border-primary/40">
+                    <span className="text-3xl font-bold tracking-[0.2em] text-[#1a1a1a] font-serif leading-none" style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
                       {gift.donor_name}
                     </span>
                   </div>
                   <div className="flex-[1] flex items-center justify-center border-b-2 border-primary/40 bg-primary/5">
-                    <span className="text-lg font-black text-primary tracking-widest" style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
+                    <span className="text-lg font-bold text-primary tracking-widest" style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
                       {labelText}
                     </span>
                   </div>
@@ -195,50 +167,49 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
                     </span>
                   </div>
                   <div className="flex-[1] flex items-center justify-center bg-white/40 border-t border-primary/10">
-                    <span className="text-[10px] font-black text-slate-400 font-mono">¥{gift.amount}</span>
+                    <span className="text-[10px] font-bold text-slate-400 font-mono">¥{gift.amount}</span>
                   </div>
                 </div>
               ))}
               {Array.from({ length: Math.max(0, pageSize - gifts.length) }).map((_, i) => (
-                <div key={`empty-${i}`} className={`flex-1 flex flex-col bg-transparent opacity-[0.03] ${isSolemn ? 'bg-slate-200' : 'bg-primary'}`} />
+                <div key={`empty-${i}`} className="flex-1 flex flex-col bg-transparent opacity-[0.03] bg-primary" />
               ))}
             </>
           )}
         </div>
 
         <div className="mt-6 flex items-center justify-between px-2 text-[11px] font-bold text-slate-500 font-mono">
-          <div>RECORD DATE: {new Date().toLocaleDateString()}</div>
+          <div>日期: {new Date().toLocaleDateString()}</div>
           <div className="text-primary flex items-center gap-2">
-            <span className="text-slate-500 uppercase">Subtotal:</span>
-            <span className="text-base font-black">¥{currentPageTotal.toLocaleString()}.00</span>
+            <span className="text-slate-500">合计:</span>
+            <span className="text-base font-bold">¥{currentPageTotal.toLocaleString()}.00</span>
           </div>
         </div>
       </div>
 
-      {/* 编辑对话框 */}
+      {/* 修改对话框 (纯净版) */}
       <Dialog open={!!editingGift} onOpenChange={(open) => !open && setEditingGift(null)}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-900">修改礼金信息</DialogTitle>
-            <DialogDescription className="font-medium text-slate-400 uppercase tracking-widest text-[10px]">Correction Interface</DialogDescription>
+        <DialogContent className="bg-white p-0 rounded-2xl shadow-2xl overflow-hidden sm:max-w-[450px]">
+          <DialogHeader className="pt-8 pb-4 px-8 border-b bg-slate-50">
+            <DialogTitle className="text-xl font-bold">修改礼金信息</DialogTitle>
+            <DialogDescription>校正已录入的内容</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-6 py-4">
-            <div className="space-y-2">
-              <Label className="font-bold text-xs uppercase tracking-widest text-slate-400 ml-1">赠送者姓名</Label>
-              <Input value={editFormData.donor_name || ''} onChange={e => setEditFormData({...editFormData, donor_name: e.target.value})} className="h-12 rounded-xl bg-muted/20 border-none font-bold text-base" />
+          
+          <div className="p-8 space-y-6">
+            <div>
+              <Label className="text-xs text-slate-400 font-bold mb-2 block">姓名</Label>
+              <Input value={editFormData.donor_name || ''} onChange={e => setEditFormData({...editFormData, donor_name: e.target.value})} className="h-11" />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest text-slate-400 ml-1">礼金金额 (¥)</Label>
-                <Input type="number" step="0.01" value={editFormData.amount || ''} onChange={e => setEditFormData({...editFormData, amount: Number(e.target.value)})} className="h-12 rounded-xl bg-muted/20 border-none font-black text-xl text-primary" />
+              <div>
+                <Label className="text-xs text-slate-400 font-bold mb-2 block">金额 (¥)</Label>
+                <Input type="number" value={editFormData.amount || ''} onChange={e => setEditFormData({...editFormData, amount: Number(e.target.value)})} className="h-11 font-bold text-primary" />
               </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest text-slate-400 ml-1">支付方式</Label>
-                <Select key={editingGift?.id} value={editFormData.gift_type} onValueChange={v => setEditFormData({...editFormData, gift_type: v})}>
-                  <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
+              <div>
+                <Label className="text-xs text-slate-400 font-bold mb-2 block">支付方式</Label>
+                <Select value={editFormData.gift_type} onValueChange={v => setEditFormData({...editFormData, gift_type: v})}>
+                  <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="现金">现金</SelectItem>
                     <SelectItem value="微信转账">微信转账</SelectItem>
@@ -249,41 +220,41 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
               </div>
             </div>
 
-            {/* 关系标签编辑 */}
-            <div className="space-y-2">
-              <Label className="font-bold text-xs uppercase tracking-widest text-slate-400 ml-1">关系标签</Label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {["亲戚", "同学", "同事", "朋友"].map(tag => (
-                  <button
-                    key={tag}
+            <div>
+              <Label className="text-xs text-slate-400 font-bold mb-3 block">关系标签</Label>
+              <div className="flex flex-wrap gap-2">
+                {relationshipPresets.map(tag => (
+                  <Button 
+                    key={tag} 
                     type="button"
+                    variant={editFormData.relationship === tag ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-lg h-8 px-3 text-[11px] font-bold"
                     onClick={() => setEditFormData({...editFormData, relationship: tag})}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] border transition-all font-bold ${
-                      editFormData.relationship === tag 
-                        ? "bg-primary text-primary-foreground border-primary shadow-md" 
-                        : "bg-muted/30 hover:border-primary/30 text-muted-foreground"
-                    }`}
                   >
                     {tag}
-                  </button>
+                  </Button>
                 ))}
               </div>
-              <Input value={editFormData.relationship || ''} onChange={e => setEditFormData({...editFormData, relationship: e.target.value})} placeholder="或自定义关系" className="h-10 rounded-xl bg-muted/20 border-none text-sm font-medium" />
+              <Input 
+                className="mt-3 h-9 text-xs" 
+                placeholder="或手动输入具体称呼" 
+                value={editFormData.relationship || ''} 
+                onChange={e => setEditFormData({...editFormData, relationship: e.target.value})} 
+              />
             </div>
 
-            <div className="space-y-2">
-              <Label className="font-bold text-xs uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
-                备注信息
-              </Label>
-              <Input value={editFormData.remark || ''} onChange={e => setEditFormData({...editFormData, remark: e.target.value})} className="h-12 rounded-xl bg-muted/20 border-none text-sm font-medium" placeholder="可选补充说明..." />
+            <div>
+              <Label className="text-xs text-slate-400 font-bold mb-2 block">备注说明</Label>
+              <Input value={editFormData.remark || ''} onChange={e => setEditFormData({...editFormData, remark: e.target.value})} className="h-11 text-sm" placeholder="可选补充..." />
             </div>
           </div>
-          <DialogFooter className="gap-3 sm:gap-0 pt-4">
-            <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:bg-red-50 font-black px-6 rounded-xl text-xs">
-              <Trash2 className="size-4 mr-2" /> 删除此笔记录
-            </Button>
-            <Button onClick={handleUpdate} disabled={isUpdating} className="flex-1 bg-primary shadow-2xl shadow-primary/30 font-black h-12 rounded-xl">
-              {isUpdating ? <Loader2 className="animate-spin" /> : "同步更新至云端"}
+
+          <DialogFooter className="p-6 border-t bg-slate-50 flex gap-2">
+            <Button variant="ghost" onClick={handleDelete} className="text-red-500">删除记录</Button>
+            <Button className="flex-1 shadow-lg" onClick={handleUpdate} disabled={isUpdating}>
+              {isUpdating ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+              保存修改
             </Button>
           </DialogFooter>
         </DialogContent>

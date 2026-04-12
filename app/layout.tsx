@@ -35,8 +35,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="theme-festive"
+          themes={["theme-festive", "theme-celadon", "theme-ink", "theme-solemn", "light", "dark"]}
+          enableSystem={false}
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">

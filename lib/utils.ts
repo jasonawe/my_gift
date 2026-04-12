@@ -1,20 +1,49 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+import { Solar } from "lunar-javascript"
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getThemeByEventType(type: string): "theme-festive" | "theme-solemn" {
-  console.log("DEBUG: Event Type received:", type);
+export function formatToLunar(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const solar = Solar.fromYmd(y, m, d);
+    const lunar = solar.getLunar();
+    return `${lunar.getYearInGanZhi()}(${lunar.getYearShengXiao()})年 ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`;
+  } catch (e) {
+    return "";
+  }
+}
+
+export function getThemeByEventType(type: string, manualTheme?: string): "theme-festive" | "theme-ink" | "theme-celadon" | "theme-solemn" {
+  // 优先使用手动指定的主题
+  if (manualTheme && manualTheme !== "auto") {
+    return manualTheme as any;
+  }
+
+  if (!type) return "theme-ink";
   
-  // 只有明确匹配到“白事”相关关键词才走肃穆主题
-  if (type && (type.includes("白事") || type.includes("吊唁") || type.includes("追思"))) {
-    return "theme-solemn"
+  // 喜庆类
+  if (["婚礼", "满月", "寿宴", "乔迁"].includes(type) || type.includes("喜") || type.includes("婚")) {
+    return "theme-festive";
   }
   
-  // 其余所有情况（婚礼、满月、甚至未知类型）全部强制走喜庆主题
-  return "theme-festive"
+  // 肃穆类
+  if (type.includes("白事") || type.includes("吊唁") || type.includes("追思") || type.includes("丧")) {
+    return "theme-solemn";
+  }
+  
+  // 文雅类
+  if (type === "其他") {
+    return "theme-ink";
+  }
+
+  // 默认天青
+  return "theme-celadon";
 }
 
 export function amountToChinese(n: number): string {

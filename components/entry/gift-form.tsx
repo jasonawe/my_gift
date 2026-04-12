@@ -25,6 +25,7 @@ import {
   CreditCard,
   Volume2
 } from "lucide-react"
+import { formatToLunar, amountToChinese } from "@/lib/utils"
 
 interface GiftFormProps {
   eventId: string
@@ -162,21 +163,50 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <div className="space-y-3">
+              <Label htmlFor="amount" className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                 <Banknote className="size-3" /> 礼金金额 (¥)
               </Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                placeholder="0.00"
-                className="h-10 font-bold text-lg bg-muted/20"
-                value={formData.amount || ""}
-                onChange={e => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  placeholder="0.00"
+                  className="h-12 font-bold text-xl bg-muted/20 pl-8 pr-4 rounded-xl border-2 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                  value={formData.amount || ""}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    setFormData(prev => ({ ...prev, amount: val === "" ? undefined : Number(val) }));
+                  }}
+                  required
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">¥</span>
+              </div>
+              
+              {/* 大写预览 */}
+              {formData.amount !== undefined && formData.amount > 0 && (
+                <div className="px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-lg animate-in fade-in slide-in-from-top-1">
+                  <p className="text-[10px] text-primary font-bold">
+                    大写：{amountToChinese(formData.amount)}
+                  </p>
+                </div>
+              )}
+
+              {/* 快捷金额 */}
+              <div className="flex flex-wrap gap-2 pt-1">
+                {[200, 500, 600, 800, 1000, 2000].map(amt => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, amount: amt }))}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-bold border bg-white hover:border-primary/50 hover:text-primary transition-all shadow-sm active:scale-95"
+                  >
+                    {amt}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -196,24 +226,50 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">关系标签</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {["亲戚", "同学", "同事", "朋友"].map(tag => (
+            <div className="space-y-3">
+              <Label className="text-xs font-bold text-muted-foreground flex items-center justify-between">
+                <span>关系标签</span>
+                {formData.relationship && (
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(prev => ({ ...prev, relationship: "" }))}
+                    className="text-[10px] text-primary hover:underline"
+                  >
+                    清除
+                  </button>
+                )}
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: "长辈", color: "bg-red-50 text-red-700 border-red-100" },
+                  { label: "平辈", color: "bg-orange-50 text-orange-700 border-orange-100" },
+                  { label: "晚辈", color: "bg-amber-50 text-amber-700 border-amber-100" },
+                  { label: "挚友", color: "bg-blue-50 text-blue-700 border-blue-100" },
+                  { label: "同事", color: "bg-slate-50 text-slate-700 border-slate-100" },
+                  { label: "同学", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+                  { label: "同乡", color: "bg-teal-50 text-teal-700 border-teal-100" },
+                  { label: "其他", color: "bg-gray-50 text-gray-700 border-gray-100" }
+                ].map(tag => (
                   <button
-                    key={tag}
+                    key={tag.label}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, relationship: tag }))}
-                    className={`px-2.5 py-1 rounded-md text-[10px] border transition-all ${
-                      formData.relationship === tag 
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm" 
-                        : "bg-background hover:border-primary/30 text-muted-foreground"
+                    onClick={() => setFormData(prev => ({ ...prev, relationship: tag.label }))}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition-all ${
+                      formData.relationship === tag.label 
+                        ? "bg-primary text-primary-foreground border-primary shadow-md scale-105" 
+                        : `${tag.color} hover:shadow-sm`
                     }`}
                   >
-                    {tag}
+                    {tag.label}
                   </button>
                 ))}
               </div>
+              <Input
+                placeholder="或手动输入具体关系（如：舅舅、二叔）"
+                className="h-9 text-xs bg-muted/10 border-dashed focus:border-solid"
+                value={formData.relationship && !["长辈", "平辈", "晚辈", "挚友", "同事", "同学", "同乡", "其他"].includes(formData.relationship) ? formData.relationship : ""}
+                onChange={e => setFormData(prev => ({ ...prev, relationship: e.target.value }))}
+              />
             </div>
 
             <div className="space-y-2">

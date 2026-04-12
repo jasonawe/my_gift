@@ -17,8 +17,10 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { VoiceSelector } from "@/components/entry/voice-selector"
 import { MapPicker } from "@/components/entry/map-picker"
+import { ThemeSelector } from "@/components/events/theme-selector"
 import { toast } from "sonner"
 import { CalendarIcon, Tag, ArrowRight, Volume2, Loader2, MapPin, Search } from "lucide-react"
+import { formatToLunar } from "@/lib/utils"
 
 export default function NewEventPage() {
   const router = useRouter()
@@ -26,6 +28,7 @@ export default function NewEventPage() {
   const [mapOpen, setMapOpen] = useState(false)
   const [voiceEnable, setVoiceEnable] = useState(false)
   const [voiceId, setVoiceId] = useState("")
+  const [themeColor, setThemeColor] = useState("auto")
 
   const [formData, setFormData] = useState({
     title: "",
@@ -67,6 +70,7 @@ export default function NewEventPage() {
     data.set("longitude", formData.longitude)
     data.set("voice_enable", voiceEnable ? "on" : "off")
     data.set("voice_id", voiceId)
+    data.set("theme_color", themeColor)
     
     const result = await createEvent(data)
     setLoading(false)
@@ -81,48 +85,49 @@ export default function NewEventPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4 text-[#1d1b19]">
+    <div className="max-w-3xl mx-auto py-8 px-4 text-[#1d1b19]">
       <Card className="border-2 shadow-lg overflow-hidden rounded-[2.5rem]">
-        <CardHeader className="space-y-1 pb-8 pt-12 px-10 text-center">
-          <CardTitle className="text-3xl font-black tracking-tight text-slate-900">建立新礼事档案</CardTitle>
-          <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">Initialize New Event</p>
+        <CardHeader className="space-y-1 pb-8 pt-12 px-10 text-center border-b bg-slate-50/50">
+          <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">建立新礼事档案</CardTitle>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-8 px-12 pb-6">
-            <div className="space-y-3">
-              <Label className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 ml-2">事件名称 / EVENT TITLE</Label>
-              <div className="relative">
-                <Tag className="absolute left-4 top-4 h-5 w-5 text-slate-300" />
-                <Input 
-                  value={formData.title}
-                  onChange={e => updateField("title", e.target.value)}
-                  placeholder="例如：王小明 & 李小红 婚礼" 
-                  className="pl-12 h-14 bg-slate-50 border-2 border-slate-100 focus:border-primary focus:ring-8 focus:ring-primary/5 rounded-2xl text-lg font-bold"
-                  required 
-                />
+          <CardContent className="space-y-8 px-12 pt-10 pb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <Label className="font-bold text-[10px] text-gray-500 ml-2">礼事名称</Label>
+                <div className="relative">
+                  <Tag className="absolute left-4 top-4 h-5 w-5 text-slate-300" />
+                  <Input 
+                    value={formData.title}
+                    onChange={e => updateField("title", e.target.value)}
+                    placeholder="例如：王小明 & 李小红 婚礼" 
+                    className="pl-12 h-14 bg-slate-50 border-2 border-slate-100 focus:border-primary focus:ring-8 focus:ring-primary/5 rounded-2xl text-lg font-bold"
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="font-bold text-[10px] text-gray-500 ml-2">礼事类型</Label>
+                <Select value={formData.event_type} onValueChange={v => updateField("event_type", v)} required>
+                  <SelectTrigger className="h-14 bg-slate-50 border-2 border-slate-100 focus:border-primary focus:ring-8 focus:ring-primary/5 rounded-2xl text-base font-bold">
+                    <SelectValue placeholder="请选择记录类型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="婚礼">喜事：婚礼/订婚</SelectItem>
+                    <SelectItem value="满月">喜事：满月/百日/周岁</SelectItem>
+                    <SelectItem value="寿宴">喜事：寿宴/生日</SelectItem>
+                    <SelectItem value="乔迁">喜事：乔迁/开业</SelectItem>
+                    <SelectItem value="白事">白事：追思/吊唁</SelectItem>
+                    <SelectItem value="其他">其他礼事</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <Label className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 ml-2">事件类型 / TYPE</Label>
-              <Select value={formData.event_type} onValueChange={v => updateField("event_type", v)} required>
-                <SelectTrigger className="h-14 bg-slate-50 border-2 border-slate-100 focus:border-primary focus:ring-8 focus:ring-primary/5 rounded-2xl text-base font-bold">
-                  <SelectValue placeholder="请选择记录类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="婚礼">喜事：婚礼/订婚</SelectItem>
-                  <SelectItem value="满月">喜事：满月/百日/周岁</SelectItem>
-                  <SelectItem value="寿宴">喜事：寿宴/生日</SelectItem>
-                  <SelectItem value="乔迁">喜事：乔迁/开业</SelectItem>
-                  <SelectItem value="白事">白事：追思/吊唁</SelectItem>
-                  <SelectItem value="其他">其他礼事</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
-                <Label className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 ml-2">开始日期 / START</Label>
+                <Label className="font-bold text-[10px] text-gray-500 ml-2">开始日期</Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-4 top-4.5 h-4 w-4 text-slate-300" />
                   <Input 
@@ -133,10 +138,15 @@ export default function NewEventPage() {
                     required 
                   />
                 </div>
+                {formData.event_start_date && (
+                  <p className="text-[10px] text-primary font-bold ml-2">
+                    农历：{formatToLunar(formData.event_start_date)}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-3">
-                <Label className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 ml-2">结束日期 / END</Label>
+                <Label className="font-bold text-[10px] text-gray-500 ml-2">结束日期</Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-4 top-4.5 h-4 w-4 text-slate-300" />
                   <Input 
@@ -150,9 +160,8 @@ export default function NewEventPage() {
               </div>
             </div>
 
-            {/* 举办地点 - 增加地图按钮 */}
             <div className="space-y-3">
-              <Label className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 ml-2">举办地点 / LOCATION</Label>
+              <Label className="font-bold text-[10px] text-gray-500 ml-2">举办地点</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <MapPin className="absolute left-4 top-4 h-5 w-5 text-slate-300" />
@@ -173,14 +182,19 @@ export default function NewEventPage() {
               </div>
             </div>
 
+            {/* 视觉风格选择 */}
+            <div className="p-6 bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200">
+              <ThemeSelector value={themeColor} onChange={setThemeColor} />
+            </div>
+
             {/* 语音播报配置 */}
             <div className="p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-black flex items-center gap-2 text-slate-700">
+                  <Label className="text-base font-bold flex items-center gap-2 text-slate-700">
                     <Volume2 className="size-4 text-primary" /> 自动语音播报服务
                   </Label>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">Automated Voice Service</p>
+                  <p className="text-[10px] text-slate-500 font-medium mt-1">提供清晰的语音播报与金额核对</p>
                 </div>
                 <Switch 
                   checked={voiceEnable} 
@@ -198,7 +212,7 @@ export default function NewEventPage() {
           <CardFooter className="pt-10 pb-16 border-t bg-slate-50/50 px-12">
             <Button 
               type="submit" 
-              className="w-full text-xl h-16 bg-primary hover:bg-primary/90 shadow-[0_20px_40px_-10px_rgba(242,13,13,0.3)] rounded-[1.5rem] font-black transition-all active:scale-[0.98]" 
+              className="w-full text-xl h-16 bg-primary hover:bg-primary/90 shadow-[0_20px_40px_-10px_rgba(242,13,13,0.3)] rounded-[1.5rem] font-bold transition-all active:scale-[0.98]" 
               disabled={loading}
             >
               {loading ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : "立即创建并开启礼簿"}
@@ -208,7 +222,6 @@ export default function NewEventPage() {
         </form>
       </Card>
 
-      {/* 地图拾取弹窗 */}
       <MapPicker 
         open={mapOpen} 
         onOpenChange={setMapOpen} 

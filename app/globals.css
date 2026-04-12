@@ -35,69 +35,81 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* 基础亮色变量 */
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0.01 80); /* 宣纸色 */
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.57 0.23 27.3); 
+  --primary: oklch(0.55 0.18 28); /* 朱砂红 */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.96 0.01 80);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.96 0.01 80);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.96 0.01 80);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.57 0.23 27.3);
-  --radius: 0.5rem;
+  --border: oklch(0.9 0.02 80);
+  --input: oklch(0.9 0.02 80);
+  --ring: oklch(0.55 0.18 28);
+  --radius: 0.75rem;
 }
 
-/* 基础深色变量 (Dark Mode) - 暴力提升可见度 */
+/* 1. 「朱砂红 · 喜宴」 (默认) */
+.theme-festive {
+  --primary: oklch(0.55 0.18 28);
+  --background: oklch(0.985 0.01 80);
+  --ring: oklch(0.55 0.18 28);
+}
+
+/* 2. 「水墨黑 · 文雅」 */
+.theme-ink {
+  --primary: oklch(0.2 0 0); /* 焦墨黑 */
+  --background: oklch(0.99 0 0); /* 素白 */
+  --border: oklch(0.9 0 0);
+  --ring: oklch(0.2 0 0);
+  --secondary: oklch(0.95 0 0);
+}
+
+/* 3. 「天青色 · 汝窑」 */
+.theme-celadon {
+  --primary: oklch(0.65 0.08 210); /* 天青 */
+  --background: oklch(0.98 0.02 210); /* 月白 */
+  --border: oklch(0.92 0.03 210);
+  --ring: oklch(0.65 0.08 210);
+  --secondary: oklch(0.94 0.04 210);
+}
+
+/* 4. 「玄青蓝 · 庄重」 */
+.theme-solemn {
+  --primary: oklch(0.35 0.08 250); /* 玄青 */
+  --background: oklch(0.97 0.02 250); /* 浅黛 */
+  --border: oklch(0.9 0.03 250);
+  --ring: oklch(0.35 0.08 250);
+  --secondary: oklch(0.92 0.04 250);
+}
+
 .dark {
-  --background: oklch(0.12 0 0); /* 更深的底，衬托出层级 */
+  --background: oklch(0.12 0 0);
   --foreground: oklch(0.98 0 0); 
   --card: oklch(0.18 0 0); 
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.65 0.24 27.3); /* 调亮红色，使其在黑色中更醒目 */
+  --primary: oklch(0.65 0.24 27.3);
   --primary-foreground: oklch(1 0 0);
-  
-  /* 解决按钮不明显的核心改动： */
-  /* 让次要按钮和静音背景在深色模式下变成“高亮的深灰色”或“磨砂白” */
   --secondary: oklch(0.3 0 0); 
   --secondary-foreground: oklch(0.98 0 0);
-  
   --muted: oklch(0.25 0 0); 
   --muted-foreground: oklch(0.7 0 0); 
-  
   --accent: oklch(0.35 0 0); 
   --accent-foreground: oklch(1 0 0);
-  
   --destructive: oklch(0.5 0.2 25);
-  --border: oklch(0.35 0 0); /* 极强的轮廓线感 */
+  --border: oklch(0.35 0 0);
   --input: oklch(0.2 0 0);
   --ring: oklch(0.65 0.24 27.3);
-}
-
-/* 业务主题扩展 */
-.theme-festive {
-  --primary: oklch(0.57 0.23 27.3);
-}
-
-.theme-solemn {
-  --primary: oklch(0.2 0 0);
-}
-
-.dark .theme-solemn {
-  --primary: oklch(0.98 0 0); 
-  --background: oklch(0.1 0 0);
 }
 
 @layer base {
@@ -105,11 +117,19 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-500;
+    @apply bg-background text-foreground transition-colors duration-700 ease-in-out;
   }
-  
-  /* 强制增强深色模式下的所有按钮阴影和轮廓 */
-  .dark .btn-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  }
+}
+
+/* 自定义卡片样式：增加纸质感 */
+.card-paper {
+  @apply relative overflow-hidden;
+  background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.01) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* 模拟红丝栏背景 */
+.bg-red-grid {
+  background-image: linear-gradient(to right, rgba(178, 34, 34, 0.03) 1px, transparent 1px);
+  background-size: 32px 100%;
 }

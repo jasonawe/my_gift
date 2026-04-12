@@ -60,14 +60,17 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
                      request.nextUrl.pathname.startsWith('/signup') || 
                      request.nextUrl.pathname.startsWith('/forgot-password') || 
-                     request.nextUrl.pathname.startsWith('/reset-password') ||
-                     request.nextUrl.pathname.startsWith('/auth')
+                     request.nextUrl.pathname.startsWith('/reset-password')
 
-  if (!user && !isAuthPage) {
+  const isPublicPage = isAuthPage || 
+                       request.nextUrl.pathname.startsWith('/guide') ||
+                       request.nextUrl.pathname.startsWith('/auth')
+
+  if (!user && !isPublicPage) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isAuthPage && !request.nextUrl.pathname.startsWith('/auth')) {
+  if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
