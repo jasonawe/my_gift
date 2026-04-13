@@ -34,6 +34,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   const [voiceEnable, setVoiceEnable] = useState(event.voice_enable || false)
   const [voiceId, setVoiceId] = useState(event.voice_id || "")
   const [themeColor, setThemeColor] = useState(event.theme_color || "auto")
+  const [isActive, setIsActive] = useState(event.is_active || false)
 
   const [formData, setFormData] = useState({
     title: event.title || "",
@@ -75,6 +76,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
     data.set("voice_enable", voiceEnable ? "on" : "off")
     data.set("voice_id", voiceId)
     data.set("theme_color", themeColor)
+    data.set("is_active", isActive ? "on" : "off")
     
     const result = await updateEvent(event.id, data)
     setLoading(false)
@@ -196,25 +198,42 @@ export function EditEventForm({ event }: EditEventFormProps) {
               <ThemeSelector value={themeColor} onChange={setThemeColor} />
             </div>
 
-            <div className="p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-bold flex items-center gap-2 text-slate-700">
-                    <Volume2 className="size-4 text-primary" /> 自动语音播报服务
-                  </Label>
-                  <p className="text-[10px] text-slate-500 font-medium mt-1">提供清晰的语音播报与金额核对</p>
+            <div className="space-y-4">
+              <div className="p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-bold flex items-center gap-2 text-slate-700">
+                      <Loader2 className={`size-4 text-primary ${isActive ? 'animate-spin-slow' : ''}`} /> 设为当前活跃礼事
+                    </Label>
+                    <p className="text-[10px] text-slate-500 font-medium mt-1">开启后，该礼事将作为主界面显示的核心档案</p>
+                  </div>
+                  <Switch 
+                    checked={isActive} 
+                    onCheckedChange={setIsActive}
+                  />
                 </div>
-                <Switch 
-                  checked={voiceEnable} 
-                  onCheckedChange={setVoiceEnable}
-                />
               </div>
-              
-              {voiceEnable && (
-                <div className="animate-in fade-in slide-in-from-top-2">
-                  <VoiceSelector value={voiceId} onChange={setVoiceId} />
+
+              <div className="p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-bold flex items-center gap-2 text-slate-700">
+                      <Volume2 className="size-4 text-primary" /> 自动语音播报服务
+                    </Label>
+                    <p className="text-[10px] text-slate-500 font-medium mt-1">提供清晰的语音播报与金额核对</p>
+                  </div>
+                  <Switch 
+                    checked={voiceEnable} 
+                    onCheckedChange={setVoiceEnable}
+                  />
                 </div>
-              )}
+                
+                {voiceEnable && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <VoiceSelector value={voiceId} onChange={setVoiceId} />
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
           <CardFooter className="pt-10 pb-16 border-t bg-slate-50/50 px-12">

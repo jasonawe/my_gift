@@ -124,9 +124,8 @@ export function Navbar() {
             {!loading && (
               <>
                 <ThemeSwitcher />
-                
-                {user && !isAuthPage && (
-                  <>
+
+                {user && !isAuthPage && (                  <>
                     <Button asChild size="sm" className="hidden md:flex rounded-xl font-bold h-9 bg-primary shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all text-primary-foreground">
                       <Link href="/events/new">
                         <Plus className="mr-1.5 size-4" /> 新建礼事
@@ -147,29 +146,6 @@ export function Navbar() {
                           <p className="text-sm font-bold text-foreground truncate">{user?.email}</p>
                         </DropdownMenuLabel>
                         
-                        <DropdownMenuSeparator />
-                        
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="rounded-xl py-3 cursor-pointer text-sm font-bold">
-                            <Palette className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span>视觉主题切换</span>
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuPortal>
-                            <DropdownMenuSubContent className="rounded-2xl p-2 border-2 ml-1 bg-background">
-                              {themes.map((t) => (
-                                <DropdownMenuItem
-                                  key={t.id}
-                                  onClick={() => setTheme(t.id)}
-                                  className="flex items-center gap-3 py-3 px-4 rounded-xl cursor-pointer"
-                                >
-                                  <div className={cn("size-3 rounded-full", t.color)} />
-                                  <span className={cn("text-sm font-bold", theme === t.id ? "text-primary" : "")}>{t.name}</span>
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuSubContent>
-                          </DropdownMenuPortal>
-                        </DropdownMenuSub>
-
                         <DropdownMenuSeparator />
                         
                         <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:bg-red-50 rounded-xl py-3 font-bold cursor-pointer">

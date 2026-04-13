@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, Download, History, Calendar } from "lucide-react"
+import { Search, Download, History, Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -24,14 +24,28 @@ interface Gift {
   created_at: string
 }
 
+const ITEMS_PER_PAGE = 10
+
 export function GiftTable({ gifts }: { gifts: Gift[] }) {
   const [search, setSearch] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const filteredGifts = gifts.filter(g => 
-    g.donor_name.toLowerCase().includes(search.toLowerCase()) ||
-    (g.relationship && g.relationship.toLowerCase().includes(search.toLowerCase())) ||
-    (g.remark && g.remark.toLowerCase().includes(search.toLowerCase()))
-  )
+  const filteredGifts = useMemo(() => {
+    const filtered = gifts.filter(g => 
+      g.donor_name.toLowerCase().includes(search.toLowerCase()) ||
+      (g.relationship && g.relationship.toLowerCase().includes(search.toLowerCase())) ||
+      (g.remark && g.remark.toLowerCase().includes(search.toLowerCase()))
+    )
+    setCurrentPage(1) // 搜索时重置到第一页
+    return filtered
+  }, [gifts, search])
+
+  const totalPages = Math.ceil(filteredGifts.length / ITEMS_PER_PAGE)
+  
+  const paginatedGifts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredGifts.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredGifts, currentPage])
 
   const downloadCSV = () => {
     const headers = ["日期", "姓名", "金额", "支付方式", "关系", "备注"]
@@ -126,7 +140,7 @@ export function GiftTable({ gifts }: { gifts: Gift[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredGifts.length === 0 ? (
+            {paginatedGifts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-60 text-center">
                   <div className="flex flex-col items-center justify-center space-y-3">
@@ -138,7 +152,7 @@ export function GiftTable({ gifts }: { gifts: Gift[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredGifts.map((gift) => (
+              paginatedGifts.map((gift) => (
                 <TableRow key={gift.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors border-slate-50 dark:border-slate-800">
                   <TableCell className="px-8 py-6">
                     <div className="flex flex-col">
@@ -184,6 +198,53 @@ export function GiftTable({ gifts }: { gifts: Gift[] }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* 分页控制 */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+          <p className="text-sm font-bold text-slate-400">
+            显示第 <span className="text-slate-900 dark:text-slate-200">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> 至 <span className="text-slate-900 dark:text-slate-200">{Math.min(currentPage * ITEMS_PER_PAGE, filteredGifts.length)}</span> 条，共 <span className="text-slate-900 dark:text-slate-200">{filteredGifts.length}</span> 条
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 font-black text-slate-600 dark:text-slate-400 disabled:opacity-30 transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  className={`size-10 rounded-xl font-black text-sm transition-all ${
+                    currentPage === page 
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                      : "border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  }`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 font-black text-slate-600 dark:text-slate-400 disabled:opacity-30 transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="size-5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

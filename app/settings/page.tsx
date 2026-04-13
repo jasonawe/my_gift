@@ -59,12 +59,6 @@ export default function SettingsPage() {
                 className="data-[state=checked]:bg-primary"
               />
             </div>
-            
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-              <p className="text-xs text-primary font-medium leading-relaxed">
-                提示：视觉主题现在可通过右上角的“切换主题”按钮进行全局快速切换，已为您精简了传统的深色模式选项。
-              </p>
-            </div>
           </CardContent>
         </Card>
 

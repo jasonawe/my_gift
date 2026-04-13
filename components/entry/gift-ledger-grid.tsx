@@ -250,10 +250,20 @@ export function GiftLedgerGrid({ eventId, theme = "theme-festive" }: GiftLedgerG
             </div>
           </div>
 
-          <DialogFooter className="p-6 border-t bg-slate-50 flex gap-2">
-            <Button variant="ghost" onClick={handleDelete} className="text-red-500">删除记录</Button>
-            <Button className="flex-1 shadow-lg" onClick={handleUpdate} disabled={isUpdating}>
-              {isUpdating ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+          <DialogFooter className="p-6 border-t bg-slate-50/50 flex flex-row gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleDelete} 
+              className="flex-1 h-12 rounded-xl font-bold border-2 border-red-100 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+            >
+              <Trash2 className="mr-2 size-4" /> 删除记录
+            </Button>
+            <Button 
+              className="flex-[2] h-12 rounded-xl font-bold bg-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" 
+              onClick={handleUpdate} 
+              disabled={isUpdating}
+            >
+              {isUpdating ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <RefreshCw className="mr-2 size-4" />}
               保存修改
             </Button>
           </DialogFooter>

@@ -72,72 +72,58 @@ export default async function DashboardPage() {
   const yearlyStats = await getYearlyStats()
 
   return (
-    <div className="max-w-7xl mx-auto space-y-16 pb-20 text-[#1d1b19]">
+    <div className="max-w-7xl mx-auto space-y-10 pb-20 text-[#1d1b19]">
       
       {/* 模块 1：最近事件 */}
-      <section className="space-y-8">
-        <div className="flex items-end justify-between px-2">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-              <History className="size-7 text-primary" /> 近期礼事
-            </h2>
-          </div>
-          <Button asChild variant="ghost" className="font-bold text-primary hover:bg-primary/5 rounded-xl transition-all">
-            <Link href="/events">查看全部礼事 <ArrowRight className="ml-1 size-4" /></Link>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+            <History className="size-5 text-primary" /> 近期礼事
+          </h2>
+          <Button asChild variant="link" className="font-bold text-primary p-0 h-auto text-xs">
+            <Link href="/events">管理全部 <ArrowRight className="ml-1 size-3" /></Link>
           </Button>
         </div>
 
         {recentEvents.length === 0 ? (
-          <Card className="border-4 border-dashed border-slate-100 rounded-[3rem] p-20 flex flex-col items-center justify-center text-center bg-slate-50/30">
-            <Plus className="size-16 text-slate-200 mb-6" />
-            <h3 className="text-xl font-bold mb-2 text-slate-900">暂无礼事记录</h3>
-            <p className="text-slate-400 max-w-xs mb-8">开启智能记账，告别纸质账本，让心意有迹可循。</p>
-            <Button asChild size="lg" className="rounded-2xl px-10 h-14 bg-primary shadow-xl shadow-primary/20 font-bold">
+          <Card className="border-2 border-dashed border-slate-100 rounded-2xl p-12 flex flex-col items-center justify-center text-center bg-slate-50/30">
+            <Plus className="size-10 text-slate-200 mb-4" />
+            <h3 className="text-lg font-bold mb-1 text-slate-900">暂无礼事记录</h3>
+            <Button asChild size="sm" className="rounded-xl px-6 h-10 bg-primary font-bold mt-4">
               <Link href="/events/new">开始新建礼事</Link>
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recentEvents.map((event) => (
               <div 
                 key={event.id} 
-                className={`group relative flex flex-col p-8 rounded-[3rem] border-4 transition-all hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] bg-white ${
-                  event.is_active ? "border-primary/20 ring-[12px] ring-primary/[0.03]" : "border-slate-50 hover:border-slate-200"
+                className={`group relative flex flex-col p-5 rounded-2xl border-2 transition-all hover:border-primary/30 bg-white ${
+                  event.is_active ? "border-primary/20 shadow-sm shadow-primary/5" : "border-slate-100"
                 }`}
               >
-                <div className="flex justify-between items-start mb-8">
-                  <div className={`p-4 rounded-[1.5rem] shadow-sm ${event.is_active ? 'bg-primary text-white shadow-primary/20' : 'bg-slate-100 text-slate-400'}`}>
-                    <Calendar className="size-7" />
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`shrink-0 size-12 rounded-xl flex items-center justify-center ${event.is_active ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    <Calendar className="size-6" />
                   </div>
-                  {event.is_active && (
-                    <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-1.5 rounded-full font-bold text-[11px] shadow-sm">
-                      <CheckCircle2 className="size-3" /> 进行中
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-black text-base text-slate-900 truncate group-hover:text-primary transition-colors">{event.title}</h4>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] text-slate-500 font-bold">{event.event_start_date}</p>
+                      {event.is_active && (
+                        <span className="text-[9px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md font-bold border border-red-100 animate-pulse">进行中</span>
+                      )}
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex-1 space-y-2 mb-10">
-                  <h4 className="font-bold text-xl text-slate-900 leading-tight group-hover:text-primary transition-colors">{event.title}</h4>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-xs text-slate-500 font-medium">{event.event_start_date} ~ {event.event_end_date}</p>
-                    <p className="text-[10px] text-slate-400 font-medium italic">农历 {formatToLunar(event.event_start_date)}</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-6 border-t border-slate-50">
-                  {event.is_active ? (
-                    <Button asChild className="w-full rounded-2xl font-bold h-12 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform">
-                      <Link href={`/entry/${event.id}`}>
-                        <PenLine className="mr-2 size-4" /> 记录礼金
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="secondary" className="w-full rounded-2xl font-bold h-12 bg-slate-50 text-slate-600 hover:bg-slate-100">
-                      <Link href={`/reports/${event.id}`}>
-                        <PieChart className="mr-2 size-4 opacity-70" /> 查看账目汇总
-                      </Link>
-                    </Button>
-                  )}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-auto">
+                  <p className="text-[10px] text-slate-400 font-medium italic opacity-80">农历 {formatToLunar(event.event_start_date)}</p>
+                  <Button asChild variant={event.is_active ? "default" : "secondary"} className="rounded-lg font-bold h-8 px-4 text-[10px]">
+                    <Link href={event.is_active ? `/entry/${event.id}` : `/reports/${event.id}`}>
+                      {event.is_active ? "去记账" : "查账目"}
+                    </Link>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -146,26 +132,27 @@ export default async function DashboardPage() {
       </section>
 
       {/* 模块 2：年度汇总图表 */}
-      <section className="space-y-8">
-        <div className="space-y-1 px-2">
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-            <BarChart3 className="size-7 text-primary" /> 年度账目概览
+      <section className="space-y-4">
+        <div className="px-2">
+          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+            <BarChart3 className="size-5 text-primary" /> 年度账目概览
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <DashboardCharts data={yearlyStats} />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-3">
+            <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm h-full">
+              <DashboardCharts data={yearlyStats} />
+            </div>
           </div>
-          <Card className="border-none shadow-sm rounded-[2rem] bg-primary flex flex-col justify-center p-10 text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 size-40 bg-white/10 blur-3xl rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-700" />
-            <div className="relative z-10 space-y-4">
-              <h4 className="text-sm font-bold tracking-wider opacity-80">数据洞察</h4>
-              <p className="text-xl font-bold leading-relaxed">
-                您近三年的礼金总账已自动汇总，帮助您清晰掌握历年社交往来。
+          <Card className="border-none shadow-sm rounded-2xl bg-slate-900 flex flex-col justify-center p-6 text-white relative overflow-hidden group">
+            <div className="relative z-10 space-y-3">
+              <h4 className="text-[10px] font-black tracking-widest text-primary uppercase">Data Insights</h4>
+              <p className="text-sm font-bold leading-relaxed text-slate-200">
+                汇总了近三年的社交往来数据，帮助您清晰掌握人情流动。
               </p>
-              <div className="pt-4 flex items-center gap-2 font-medium text-xs opacity-90">
-                <ShieldCheck className="size-4" /> 数据安全加密保护中
+              <div className="pt-2 flex items-center gap-2 font-bold text-[10px] text-slate-500">
+                <ShieldCheck className="size-3" /> 数据已加密
               </div>
             </div>
           </Card>

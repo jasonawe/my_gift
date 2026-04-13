@@ -145,27 +145,48 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
           新增礼金记录
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6 pb-8 space-y-8">
+      <CardContent className="pt-6 pb-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 录入字段 */}
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="donor_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <User className="size-3" /> 赠送者姓名
-              </Label>
-              <Input
-                id="donor_name"
-                placeholder="姓名或称呼"
-                className="h-10 bg-muted/20 focus:bg-background"
-                value={formData.donor_name}
-                onChange={e => setFormData(prev => ({ ...prev, donor_name: e.target.value }))}
-                required
-              />
+          <div className="space-y-6">
+            {/* 第一行：姓名与支付方式 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="donor_name" className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
+                  <User className="size-2.5 text-primary/60" /> 姓名
+                </Label>
+                <Input
+                  id="donor_name"
+                  placeholder="姓名或称呼"
+                  className="h-10 bg-muted/20 focus:bg-background border-2 border-transparent focus:border-primary/20 rounded-lg font-bold text-sm px-3"
+                  value={formData.donor_name}
+                  onChange={e => setFormData(prev => ({ ...prev, donor_name: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
+                  <CreditCard className="size-2.5 text-primary/60" /> 支付
+                </Label>
+                <Select value={formData.gift_type} onValueChange={v => setFormData(prev => ({ ...prev, gift_type: v }))}>
+                  <SelectTrigger className="h-10 bg-muted/20 border-transparent rounded-lg font-bold text-xs focus:ring-0 focus:border-primary/20 px-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2">
+                    <SelectItem value="现金">现金</SelectItem>
+                    <SelectItem value="微信转账">微信</SelectItem>
+                    <SelectItem value="支付宝">支付宝</SelectItem>
+                    <SelectItem value="实物礼品">实物</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <Label htmlFor="amount" className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                <Banknote className="size-3" /> 礼金金额 (¥)
+            {/* 第二行：金额（全宽） */}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
+                <Banknote className="size-2.5 text-primary/60" /> 礼金金额 (¥)
               </Label>
               <div className="relative">
                 <Input
@@ -174,7 +195,7 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                   inputMode="decimal"
                   pattern="[0-9]*\.?[0-9]*"
                   placeholder="0.00"
-                  className="h-12 font-bold text-xl bg-muted/20 pl-8 pr-4 rounded-xl border-2 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                  className="h-12 font-black text-xl bg-muted/20 pl-8 pr-4 rounded-xl border-2 border-transparent focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all w-full"
                   value={formData.amount || ""}
                   onChange={e => {
                     const val = e.target.value.replace(/[^0-9.]/g, '');
@@ -182,26 +203,27 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                   }}
                   required
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">¥</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">¥</span>
               </div>
               
               {/* 大写预览 */}
               {formData.amount !== undefined && formData.amount > 0 && (
-                <div className="px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-lg animate-in fade-in slide-in-from-top-1">
-                  <p className="text-[10px] text-primary font-bold">
-                    大写：{amountToChinese(formData.amount)}
+                <div className="px-3 py-2 bg-primary/5 border border-primary/10 rounded-xl animate-in fade-in slide-in-from-top-1">
+                  <p className="text-[10px] text-primary font-bold flex items-center gap-2">
+                    <span className="opacity-60">大写预览</span>
+                    {amountToChinese(formData.amount)}
                   </p>
                 </div>
               )}
 
               {/* 快捷金额 */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {[200, 500, 600, 800, 1000, 2000].map(amt => (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[200, 500, 600, 800, 1000].map(amt => (
                   <button
                     key={amt}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, amount: amt }))}
-                    className="px-3 py-1.5 rounded-lg text-[11px] font-bold border bg-white hover:border-primary/50 hover:text-primary transition-all shadow-sm active:scale-95"
+                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-black border bg-white hover:border-primary/50 hover:text-primary transition-all shadow-sm active:scale-95"
                   >
                     {amt}
                   </button>
@@ -209,25 +231,9 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <CreditCard className="size-3" /> 支付方式
-              </Label>
-              <Select value={formData.gift_type} onValueChange={v => setFormData(prev => ({ ...prev, gift_type: v }))}>
-                <SelectTrigger className="h-10 bg-muted/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="现金">现金</SelectItem>
-                  <SelectItem value="微信转账">微信转账</SelectItem>
-                  <SelectItem value="支付宝">支付宝</SelectItem>
-                  <SelectItem value="实物礼品">实物礼品</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
+            {/* 关系标签 */}
             <div className="space-y-3">
-              <Label className="text-xs font-bold text-muted-foreground flex items-center justify-between">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between ml-1">
                 <span>关系标签</span>
                 {formData.relationship && (
                   <button 
@@ -239,7 +245,7 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                   </button>
                 )}
               </Label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {[
                   { label: "长辈", color: "bg-red-50 text-red-700 border-red-100" },
                   { label: "平辈", color: "bg-orange-50 text-orange-700 border-orange-100" },
@@ -247,14 +253,13 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                   { label: "挚友", color: "bg-blue-50 text-blue-700 border-blue-100" },
                   { label: "同事", color: "bg-slate-50 text-slate-700 border-slate-100" },
                   { label: "同学", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
-                  { label: "同乡", color: "bg-teal-50 text-teal-700 border-teal-100" },
                   { label: "其他", color: "bg-gray-50 text-gray-700 border-gray-100" }
                 ].map(tag => (
                   <button
                     key={tag.label}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, relationship: tag.label }))}
-                    className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition-all ${
+                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
                       formData.relationship === tag.label 
                         ? "bg-primary text-primary-foreground border-primary shadow-md scale-105" 
                         : `${tag.color} hover:shadow-sm`
@@ -265,54 +270,58 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                 ))}
               </div>
               <Input
-                placeholder="或手动输入具体关系（如：舅舅、二叔）"
-                className="h-9 text-xs bg-muted/10 border-dashed focus:border-solid"
-                value={formData.relationship && !["长辈", "平辈", "晚辈", "挚友", "同事", "同学", "同乡", "其他"].includes(formData.relationship) ? formData.relationship : ""}
+                placeholder="或输入具体关系（如：二叔）"
+                className="h-9 text-xs bg-muted/10 border-dashed focus:border-solid rounded-lg px-3"
+                value={formData.relationship && !["长辈", "平辈", "晚辈", "挚友", "同事", "同学", "其他"].includes(formData.relationship) ? formData.relationship : ""}
                 onChange={e => setFormData(prev => ({ ...prev, relationship: e.target.value }))}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="remark" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <MessageSquare className="size-3" /> 备注说明
-              </Label>
-              <Input
-                id="remark"
-                placeholder="可选信息..."
-                className="h-10 text-sm bg-muted/20"
-                value={formData.remark}
-                onChange={e => setFormData(prev => ({ ...prev, remark: e.target.value }))}
-              />
+            {/* 语音与备注并排（带对齐标签） */}
+            <div className="flex gap-3 items-start">
+              <div className="flex-[2] space-y-1.5 min-w-0">
+                <Label className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
+                  <Volume2 className="size-2.5 text-primary/60" /> 语音
+                </Label>
+                <div className="space-y-2">
+                  <div className="bg-primary/5 rounded-lg border border-primary/10 p-2 h-9 flex items-center justify-between">
+                    <span className="text-[9px] font-bold text-slate-600 truncate">开启播报</span>
+                    <Switch 
+                      checked={localVoiceEnable} 
+                      onCheckedChange={setLocalVoiceEnable}
+                      className="scale-[0.6] origin-right shrink-0"
+                    />
+                  </div>
+                  {Boolean(localVoiceEnable) && (
+                    <div className="animate-in fade-in slide-in-from-top-1">
+                      <VoiceSelector value={localVoiceId} onChange={setLocalVoiceId} size="sm" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-[3] space-y-1.5 min-w-0">
+                <Label htmlFor="remark" className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
+                  <MessageSquare className="size-2.5 text-primary/60" /> 备注说明
+                </Label>
+                <Input
+                  id="remark"
+                  placeholder="可选补充..."
+                  className="h-9 text-xs bg-muted/20 border-transparent rounded-lg focus:border-primary/20"
+                  value={formData.remark}
+                  onChange={e => setFormData(prev => ({ ...prev, remark: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
 
-          {/* 实时语音控制 (仅限本次会话) */}
-          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Volume2 className={`size-4 ${localVoiceEnable ? 'text-primary' : 'text-slate-400'}`} />
-                <Label className="text-xs font-bold text-slate-600">实时语音播报</Label>
-              </div>
-              <Switch 
-                checked={localVoiceEnable} 
-                onCheckedChange={setLocalVoiceEnable}
-                className="scale-75"
-              />
-            </div>
-            {Boolean(localVoiceEnable) && (
-              <div className="animate-in fade-in slide-in-from-top-1">
-                <VoiceSelector value={localVoiceId} onChange={setLocalVoiceId} />
-              </div>
-            )}
-          </div>
-
-          <div className="pt-4">
+          <div className="pt-2">
             <Button 
               type="submit" 
-              className="w-full h-12 font-bold shadow-lg shadow-primary/20 bg-primary rounded-xl"
+              className="w-full h-14 text-base font-black shadow-xl shadow-primary/20 bg-primary rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-all"
               disabled={loading}
             >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : "确认录入"}
+              {loading ? <Loader2 className="size-5 animate-spin" /> : "确认录入记录"}
             </Button>
           </div>
         </form>

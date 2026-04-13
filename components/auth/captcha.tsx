@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RefreshCw, ShieldCheck } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 export interface CaptchaHandle {
   getCode: () => string
@@ -15,7 +13,7 @@ export const Captcha = forwardRef<CaptchaHandle, { onValidate?: (isValid: boolea
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const generateCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // 去掉易混淆的 0, O, I, 1
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     let result = ""
     for (let i = 0; i < 4; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -29,44 +27,47 @@ export const Captcha = forwardRef<CaptchaHandle, { onValidate?: (isValid: boolea
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // 背景
-    ctx.fillStyle = "#f8fafc"
+    // 1. 背景
+    ctx.fillStyle = "#f8fafc" // slate-50
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // 噪点
-    for (let i = 0; i < 30; i++) {
+    // 2. 噪点
+    for (let i = 0; i < 50; i++) {
       ctx.fillStyle = `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255}, 0.2)`
       ctx.beginPath()
       ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, 2 * Math.PI)
       ctx.fill()
     }
 
-    // 干扰线
-    for (let i = 0; i < 3; i++) {
+    // 3. 绘制文字
+    ctx.font = "bold 24px monospace"
+    ctx.textBaseline = "middle"
+    for (let i = 0; i < newCode.length; i++) {
+      ctx.save()
+      const x = 20 + i * 20
+      const y = canvas.height / 2
+      ctx.translate(x, y)
+      ctx.rotate((Math.random() * 30 - 15) * Math.PI / 180)
+      ctx.fillStyle = `rgb(${Math.random() * 100},${Math.random() * 100},${Math.random() * 100})`
+      ctx.fillText(newCode[i], -10, 0)
+      ctx.restore()
+    }
+
+    // 4. 干扰线
+    for (let i = 0; i < 2; i++) {
       ctx.strokeStyle = `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255}, 0.3)`
       ctx.beginPath()
       ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
       ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
       ctx.stroke()
     }
-
-    // 绘制文字
-    ctx.font = "bold 24px 'Courier New'"
-    ctx.textBaseline = "middle"
-    for (let i = 0; i < newCode.length; i++) {
-      ctx.save()
-      ctx.translate(20 + i * 20, canvas.height / 2)
-      ctx.rotate((Math.random() * 30 - 15) * Math.PI / 180)
-      ctx.fillStyle = `rgb(${Math.random() * 100},${Math.random() * 100},${Math.random() * 100})`
-      ctx.fillText(newCode[i], -10, 0)
-      ctx.restore()
-    }
   }
 
   const refresh = () => {
     const newCode = generateCode()
     setCode(newCode)
-    draw(newCode)
+    // 延迟绘制确保状态生效
+    setTimeout(() => draw(newCode), 0)
   }
 
   useImperativeHandle(ref, () => ({
@@ -80,14 +81,17 @@ export const Captcha = forwardRef<CaptchaHandle, { onValidate?: (isValid: boolea
 
   return (
     <div className="flex items-center gap-3">
-      <canvas 
-        ref={canvasRef} 
-        width={100} 
-        height={48} 
-        onClick={refresh}
-        className="rounded-xl border-2 border-slate-100 cursor-pointer hover:border-primary/30 transition-all bg-white"
-        title="点击刷新验证码"
-      />
+      <div className="relative group overflow-hidden rounded-xl border-2 border-slate-100 dark:border-slate-800">
+        <canvas 
+          ref={canvasRef} 
+          width={100} 
+          height={48} 
+          onClick={refresh}
+          className="cursor-pointer bg-slate-50 dark:bg-slate-900 block"
+          title="点击刷新验证码"
+        />
+        <div className="absolute inset-0 pointer-events-none group-hover:bg-primary/5 transition-colors" />
+      </div>
       <div className="flex flex-col">
         <button 
           type="button" 

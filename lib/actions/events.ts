@@ -15,6 +15,7 @@ const EventSchema = z.object({
   voice_enable: z.boolean().default(false),
   voice_id: z.string().optional(),
   theme_color: z.string().optional(),
+  is_active: z.boolean().optional(),
 })
 
 export async function createEvent(formData: FormData) {
@@ -56,13 +57,6 @@ export async function createEvent(formData: FormData) {
     return { error: `数据库提交失败: ${error.message}` }
   }
 
-  // 将该用户的其他所有事件设为非活跃
-  await supabase
-    .from("gl_events")
-    .update({ is_active: false })
-    .eq("user_id", user.id)
-    .neq("id", data[0].id)
-
   revalidatePath("/dashboard")
   revalidatePath("/events")
   return { success: true, eventId: data[0].id }
@@ -85,6 +79,7 @@ export async function updateEvent(id: string, formData: FormData) {
     voice_enable: formData.get("voice_enable") === "on",
     voice_id: formData.get("voice_id"),
     theme_color: formData.get("theme_color") || "auto",
+    is_active: formData.get("is_active") === "on",
   })
 
   if (!validatedFields.success) {
