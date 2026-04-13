@@ -26,13 +26,32 @@ export function MapPicker({ open, onOpenChange, onConfirm }: MapPickerProps) {
   const [loading, setLoading] = useState(false)
   const [selectedInfo, setSelectedInfo] = useState<{address: string, lat: number, lng: number} | null>(null)
 
+  const updateMarker = (lng: number, lat: number) => {
+    // @ts-ignore
+    const AMap = window.AMap
+    if (!AMap || !mapRef.current || !markerRef.current) return
+
+    markerRef.current.setPosition([lng, lat])
+    mapRef.current.setCenter([lng, lat])
+
+    const geocoder = new AMap.Geocoder()
+    geocoder.getAddress([lng, lat], (status: string, result: any) => {
+      if (status === 'complete' && result.regeocode) {
+        setSelectedInfo({
+          address: result.regeocode.formattedAddress,
+          lat,
+          lng
+        })
+      }
+    })
+  }
+
   useEffect(() => {
     if (!open) return
 
     const key = process.env.NEXT_PUBLIC_AMAP_KEY
     if (!key) return
 
-    // 强制同步高德安全配置 (从环境变量读取)
     if (typeof window !== 'undefined') {
       window._AMapSecurityConfig = {
         securityJsCode: process.env.NEXT_PUBLIC_AMAP_SECRET,
@@ -74,13 +93,11 @@ export function MapPicker({ open, onOpenChange, onConfirm }: MapPickerProps) {
       }
     }
 
-    // 动态载入脚本
     if (!window.AMap) {
       const script = document.createElement('script')
       script.src = `https://webapi.amap.com/maps?v=2.0&key=${key}&plugin=AMap.PlaceSearch,AMap.Geocoder`
       script.async = true
       script.onload = () => {
-        // 给脚本加载留一点缓冲时间
         setTimeout(initMap, 300)
       }
       document.head.appendChild(script)
@@ -88,30 +105,8 @@ export function MapPicker({ open, onOpenChange, onConfirm }: MapPickerProps) {
       setTimeout(initMap, 200)
     }
 
-    return () => {
-      // 这里的销毁要小心处理，Dialog 切换时可能还没渲染完
-    }
+    return () => {}
   }, [open])
-
-  const updateMarker = (lng: number, lat: number) => {
-    // @ts-ignore
-    const AMap = window.AMap
-    if (!AMap || !mapRef.current || !markerRef.current) return
-
-    markerRef.current.setPosition([lng, lat])
-    mapRef.current.setCenter([lng, lat])
-
-    const geocoder = new AMap.Geocoder()
-    geocoder.getAddress([lng, lat], (status: string, result: any) => {
-      if (status === 'complete' && result.regeocode) {
-        setSelectedInfo({
-          address: result.regeocode.formattedAddress,
-          lat,
-          lng
-        })
-      }
-    })
-  }
 
   const handleSearch = () => {
     if (!searchQuery) return
