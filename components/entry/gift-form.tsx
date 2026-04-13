@@ -294,7 +294,7 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                   </div>
                   {Boolean(localVoiceEnable) && (
                     <div className="animate-in fade-in slide-in-from-top-1">
-                      <VoiceSelector value={localVoiceId} onChange={setLocalVoiceId} size="sm" />
+                      <VoiceSelector value={localVoiceId} onChange={setLocalVoiceId} />
                     </div>
                   )}
                 </div>

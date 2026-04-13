@@ -37,21 +37,18 @@ export function VoiceSelector({ value, onChange }: VoiceSelectorProps) {
   }, [value, onChange])
 
   return (
-    <div className="space-y-2">
-      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 flex items-center gap-2">
-        <Volume2 className="size-3" /> 播报音色选择
-      </Label>
+    <div className="space-y-1">
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-gray-200">
-          <SelectValue placeholder="加载语音引擎中..." />
+        <SelectTrigger className="h-9 rounded-lg bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 focus:ring-0 focus:border-primary/20 text-[10px] font-bold px-2.5">
+          <SelectValue placeholder="选择音色..." />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-xl border-2">
           {voices.length === 0 && (
-            <SelectItem value="default" disabled>系统未发现中文语音</SelectItem>
+            <SelectItem value="default" disabled className="text-[10px]">未发现中文语音</SelectItem>
           )}
           {voices.map((voice) => (
-            <SelectItem key={voice.name} value={voice.name}>
-              {voice.name} ({voice.lang})
+            <SelectItem key={voice.name} value={voice.name} className="text-[10px] font-bold py-2.5">
+              {voice.name.split(' ')[0]} {/* 简化显示名称 */}
             </SelectItem>
           ))}
         </SelectContent>
