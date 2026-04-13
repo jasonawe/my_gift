@@ -25,7 +25,7 @@ import {
   CreditCard,
   Volume2
 } from "lucide-react"
-import { formatToLunar, amountToChinese } from "@/lib/utils"
+import { amountToChinese } from "@/lib/utils"
 
 interface GiftFormProps {
   eventId: string
@@ -58,23 +58,19 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
   // 语音播报逻辑
   const speak = (name: string, amount: number) => {
     if (!localVoiceEnable || typeof window === "undefined" || !window.speechSynthesis) {
-      console.warn("Speech synthesis not supported or disabled");
       return
     }
 
-    // 停止当前正在进行的播报
     window.speechSynthesis.cancel()
 
     const text = `${name}，金额${amount}元。`
     const utterance = new SpeechSynthesisUtterance(text)
     
-    // 设置基础参数
     utterance.lang = "zh-CN"
-    utterance.rate = 1.0 // 语速
-    utterance.pitch = 1.0 // 音调
-    utterance.volume = 1.0 // 音量
+    utterance.rate = 1.0
+    utterance.pitch = 1.0
+    utterance.volume = 1.0
 
-    // 寻找匹配的音色
     const voices = window.speechSynthesis.getVoices()
     if (localVoiceId && voices.length > 0) {
       const selectedVoice = voices.find(v => v.name === localVoiceId)
@@ -82,12 +78,10 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
         utterance.voice = selectedVoice
       }
     } else if (voices.length > 0) {
-      // 自动寻找第一个中文语音作为兜底
       const zhVoice = voices.find(v => v.lang.includes("zh"))
       if (zhVoice) utterance.voice = zhVoice
     }
     
-    console.log("LOG: Attempting to speak:", text)
     window.speechSynthesis.speak(utterance)
   }
 
@@ -125,10 +119,7 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
 
     if (result.success) {
       toast.success(`成功录入: ${formData.donor_name} ¥${formData.amount}`)
-      
-      // 执行播报
       speak(formData.donor_name, formData.amount)
-      
       resetForm()
       if (onSuccess) onSuccess()
     } else {
@@ -147,7 +138,6 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
       </CardHeader>
       <CardContent className="pt-6 pb-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 录入字段 */}
           <div className="space-y-6">
             {/* 第一行：姓名与支付方式 */}
             <div className="grid grid-cols-2 gap-3">
@@ -206,7 +196,6 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">¥</span>
               </div>
               
-              {/* 大写预览 */}
               {formData.amount !== undefined && formData.amount > 0 && (
                 <div className="px-3 py-2 bg-primary/5 border border-primary/10 rounded-xl animate-in fade-in slide-in-from-top-1">
                   <p className="text-[10px] text-primary font-bold flex items-center gap-2">
@@ -216,7 +205,6 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
                 </div>
               )}
 
-              {/* 快捷金额 */}
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {[200, 500, 600, 800, 1000].map(amt => (
                   <button
@@ -277,7 +265,7 @@ export function GiftForm({ eventId, voiceEnable: initialVoiceEnable, voiceId: in
               />
             </div>
 
-            {/* 语音与备注并排（带对齐标签） */}
+            {/* 语音与备注并排 */}
             <div className="flex gap-3 items-start">
               <div className="flex-[2] space-y-1.5 min-w-0">
                 <Label className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-1.5 ml-0.5">
