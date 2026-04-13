@@ -30,14 +30,17 @@ export function GiftTable({ gifts }: { gifts: Gift[] }) {
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
 
+  // 搜索时重置到第一页
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search])
+
   const filteredGifts = useMemo(() => {
-    const filtered = gifts.filter(g => 
+    return gifts.filter(g => 
       g.donor_name.toLowerCase().includes(search.toLowerCase()) ||
       (g.relationship && g.relationship.toLowerCase().includes(search.toLowerCase())) ||
       (g.remark && g.remark.toLowerCase().includes(search.toLowerCase()))
     )
-    setCurrentPage(1) // 搜索时重置到第一页
-    return filtered
   }, [gifts, search])
 
   const totalPages = Math.ceil(filteredGifts.length / ITEMS_PER_PAGE)

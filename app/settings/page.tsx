@@ -14,9 +14,11 @@ export default function SettingsPage() {
 
   // 解决 hydration 不匹配问题
   useEffect(() => {
-    setIsMounted(true)
     const savedVoice = localStorage.getItem("setting_voice_global")
-    if (savedVoice !== null) setVoiceGlobal(savedVoice === "true")
+    if (savedVoice !== null) {
+      setVoiceGlobal(savedVoice === "true")
+    }
+    setIsMounted(true)
   }, [])
 
   const handleVoiceChange = (checked: boolean) => {
