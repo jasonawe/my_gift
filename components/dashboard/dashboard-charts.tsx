@@ -28,7 +28,7 @@ export function DashboardCharts({ data }: { data: YearlyData[] }) {
       <div className="relative z-10 flex flex-col h-full">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">年度心意趋势 / Annual Trends</h4>
+            <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">年度礼金趋势</h4>
             <p className="text-[10px] text-slate-300 font-bold mt-1">对比过去三年的礼金总额与社交广度</p>
           </div>
         </div>

@@ -70,24 +70,54 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* 2. 核心概览卡片 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { label: "合计礼金", value: `¥ ${totalAmount.toLocaleString()}`, icon: Wallet, color: "text-primary" },
-            { label: "礼单总数", value: `${gifts.length} 笔`, icon: Users, color: "text-muted-foreground" },
-            { label: "平均金额", value: `¥ ${avgAmount.toLocaleString()}`, icon: TrendingUp, color: "text-muted-foreground" },
-            { label: "最高单笔", value: `¥ ${maxGift.toLocaleString()}`, icon: ChartIcon, color: "text-muted-foreground" }
-          ].map((item, idx) => (
-            <Card key={idx} className="shadow-sm border-2 border-border/50 rounded-[2rem] overflow-hidden bg-card/80 backdrop-blur-sm card-paper">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-8 space-y-0">
-                <CardTitle className="text-xs font-bold text-muted-foreground">{item.label}</CardTitle>
-                <item.icon className={cn("size-4", item.color)} />
-              </CardHeader>
-              <CardContent className="pb-10 px-8">
-                <div className="text-3xl font-bold tracking-tight text-foreground">{item.value}</div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* 2. 核心合计总览 */}
+        <div className="bg-card/80 backdrop-blur-md border-2 border-border/50 rounded-[2.5rem] p-8 lg:p-12 shadow-xl card-paper relative overflow-hidden">
+          <div className="absolute top-0 right-0 size-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+          
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-10 lg:gap-20">
+            {/* 主核心数据 */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-xs">
+                <Wallet className="size-4" /> 合计礼金总额
+              </div>
+              <div className="text-6xl font-black tracking-tighter text-foreground tabular-nums flex items-baseline gap-2">
+                <small className="text-2xl opacity-30 italic font-medium">¥</small>
+                {totalAmount.toLocaleString()}
+              </div>
+            </div>
+
+            {/* 次要数据网格 */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 py-2 lg:border-l lg:border-border/50 lg:pl-16">
+              <div className="flex items-center justify-between lg:justify-start lg:gap-6 border-b border-border/30 pb-3 lg:border-none lg:pb-0">
+                <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-wider shrink-0">
+                  <Users className="size-3 text-primary/40" /> 礼单总数
+                </div>
+                <div className="text-2xl font-black text-foreground tabular-nums">
+                  {gifts.length} <small className="text-xs font-bold opacity-40 ml-0.5">笔</small>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between lg:justify-start lg:gap-6 border-b border-border/30 pb-3 lg:border-none lg:pb-0">
+                <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-wider shrink-0">
+                  <TrendingUp className="size-3 text-primary/40" /> 平均金额
+                </div>
+                <div className="text-2xl font-black text-foreground tabular-nums">
+                  <small className="text-xs font-bold opacity-40 mr-0.5">¥</small>
+                  {Number(avgAmount).toLocaleString()}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between lg:justify-start lg:gap-6">
+                <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-wider shrink-0">
+                  <ChartIcon className="size-3 text-primary/40" /> 最高单笔
+                </div>
+                <div className="text-2xl font-black text-primary tabular-nums">
+                  <small className="text-xs font-bold opacity-40 mr-0.5">¥</small>
+                  {maxGift.toLocaleString()}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 3. 可视化分析图表 */}

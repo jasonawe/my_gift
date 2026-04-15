@@ -161,7 +161,7 @@ export function MapPicker({ open, onOpenChange, onConfirm }: MapPickerProps) {
                 <div>
                   <div className="text-sm font-black text-slate-900 line-clamp-1">{selectedInfo.address}</div>
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                    POINT: {selectedInfo.lat.toFixed(6)}, {selectedInfo.lng.toFixed(6)}
+                    地理坐标: {selectedInfo.lat.toFixed(6)}, {selectedInfo.lng.toFixed(6)}
                   </div>
                 </div>
               </div>

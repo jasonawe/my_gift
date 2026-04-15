@@ -147,7 +147,7 @@ export default async function DashboardPage() {
           </div>
           <Card className="border-none shadow-sm rounded-2xl bg-slate-900 flex flex-col justify-center p-6 text-white relative overflow-hidden group">
             <div className="relative z-10 space-y-3">
-              <h4 className="text-[10px] font-black tracking-widest text-primary uppercase">Data Insights</h4>
+              <h4 className="text-[10px] font-black tracking-widest text-primary uppercase">数据洞察</h4>
               <p className="text-sm font-bold leading-relaxed text-slate-200">
                 汇总了近三年的社交往来数据，帮助您清晰掌握人情流动。
               </p>
