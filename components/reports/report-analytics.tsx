@@ -6,7 +6,6 @@ import {
   Cell, 
   Tooltip, 
   ResponsiveContainer, 
-  Legend,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -23,16 +22,25 @@ interface ReportAnalyticsProps {
 }
 
 export function ReportAnalytics({ gifts }: ReportAnalyticsProps) {
-  // 1. 关系分布 (雷达图数据)
+  // 1. 关系分布 (雷达图数据) - 同步录入端的分类标签
   const relMap: Record<string, number> = {
-    "亲戚": 0, "同学": 0, "同事": 0, "朋友": 0, "其他": 0
+    "长辈": 0, "平辈": 0, "晚辈": 0, "挚友": 0, "同事": 0, "同学": 0, "其他": 0
   }
+  
   gifts.forEach(g => {
     const key = g.relationship || "其他"
-    if (relMap[key] !== undefined) relMap[key]++
-    else relMap["其他"]++
+    if (relMap[key] !== undefined) {
+      relMap[key]++
+    } else {
+      relMap["其他"]++
+    }
   })
-  const radarData = Object.entries(relMap).map(([subject, A]) => ({ subject, A, fullMark: Math.max(...Object.values(relMap)) }))
+  
+  const radarData = Object.entries(relMap).map(([subject, A]) => ({ 
+    subject, 
+    A, 
+    fullMark: Math.max(...Object.values(relMap), 1) 
+  }))
 
   // 2. 金额区间分布 (柱状图数据)
   const ranges = [
@@ -54,15 +62,15 @@ export function ReportAnalytics({ gifts }: ReportAnalyticsProps) {
   })
   const pieData = Object.entries(typeMap).map(([name, value]) => ({ name, value }))
 
-  const COLORS = ['#f20d0d', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b']
+  const COLORS = ['#f20d0d', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1', '#94a3b8']
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* A. 关系亲疏透视 (雷达图) */}
+        {/* A. 关系分布透视 (雷达图) */}
         <div className="lg:col-span-1 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 flex flex-col items-center">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">关系分布透视 / Relationships</h4>
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">关系分布透视</h4>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
@@ -81,9 +89,9 @@ export function ReportAnalytics({ gifts }: ReportAnalyticsProps) {
           </div>
         </div>
 
-        {/* B. 金额档位分布 (精细柱状图) */}
+        {/* B. 礼金档位分析 (精细柱状图) */}
         <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 flex flex-col">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">礼金档位分析 / Amount Ranges</h4>
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">礼金档位分析</h4>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -101,11 +109,11 @@ export function ReportAnalytics({ gifts }: ReportAnalyticsProps) {
         </div>
       </div>
 
-      {/* C. 资金构成比例 (横向分布) */}
+      {/* C. 资金来源构成 (横向分布) */}
       <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-50">
         <div className="flex flex-col md:flex-row items-center gap-12">
           <div className="w-full md:w-1/3 space-y-4">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">资金来源构成 / Funding Mix</h4>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">资金来源构成</h4>
             <p className="text-xl font-black text-slate-900 leading-tight">
               各支付渠道的<br/>资金贡献占比
             </p>
